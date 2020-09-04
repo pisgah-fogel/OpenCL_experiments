@@ -3,6 +3,8 @@
 #include <iostream>
 #include <CL/cl2.hpp>
 
+#include <xmmintrin.h>
+
 void cpu_add_a_b() {
 	int A[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 	int B[] = {0, 1, 2, 0, 1, 2, 0, 1, 2, 0};
@@ -235,6 +237,25 @@ int main(){
 	benchmark(&gpu_add_a_b, 100);
 
 	benchmark(&cpu_add_a_b, 100);
+
+	__m128 p1, p2;
+	__m128 sum = _mm_add_ps(p1, p2); // https://www.felixcloutier.com/x86/addps
+	// _mm_mul_ps
+
+	float a[] __attribute__ ((aligned (16))) = { 41982.,  81.5091, 3.14, 42.666 };                                                                                                                                 
+	__m128* ptr = (__m128*)a;                                                                                                                                                                                      
+	__m128 t = _mm_sqrt_ps(*ptr); // GCC -S gives sqrtps  %xmm0, %xmm0
+
+	// _mm_mulhi_epu16 SSE1 multiply 4 floats 3 cycles 1 throughput
+	// _mm_mulhi_epu16 SSE2 multiply 8 fixed points 3 cycles 1 throughput
+
+	// AVX2 __m256 _mm256_dp_ps(__m256 m1, __m256 m2, const int mask); // 2 to 4 dot products
+
+	// GCC flag -mavx2 , need ISA extension enabled
+	// gcc -O3 -march=native (-mavx -mfma -mtune -mpopcnt) (maybe -mno-avx256-split-unaligned-load ?)
+
+	// MSVC -O2 -arch:AVX2
+
 
 	return 0;
 }
